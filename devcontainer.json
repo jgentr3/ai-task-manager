@@ -1,0 +1,51 @@
+{
+  "name": "AI Task Manager - Claude-flow Development",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:18",
+  
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+
+  "postCreateCommand": "npm install -g @anthropic-ai/claude-code && echo '✅ Claude Code installed! Run: claude --dangerously-skip-permissions to authenticate'",
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "bradlc.vscode-tailwindcss",
+        "ms-vscode.vscode-typescript-next"
+      ],
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash",
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "files.autoSave": "afterDelay",
+        "files.autoSaveDelay": 1000
+      }
+    }
+  },
+
+  "forwardPorts": [3000, 3001, 5000, 5173],
+  "portsAttributes": {
+    "3000": {
+      "label": "Frontend",
+      "onAutoForward": "notify"
+    },
+    "3001": {
+      "label": "Frontend (Alt)",
+      "onAutoForward": "notify"
+    },
+    "5000": {
+      "label": "Backend API",
+      "onAutoForward": "notify"
+    },
+    "5173": {
+      "label": "Vite Dev Server",
+      "onAutoForward": "notify"
+    }
+  },
+
+  "remoteUser": "node"
+}
