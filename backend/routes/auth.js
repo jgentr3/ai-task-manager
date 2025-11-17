@@ -1,7 +1,6 @@
 import express from 'express';
 import { body, validationResult } from 'express-validator';
 import User from '../models/User.js';
-import { hashPassword, comparePassword } from '../utils/hash.js';
 import { generateTokenPair } from '../config/jwt.js';
 import { authenticate, authenticateRefreshToken } from '../middleware/auth.js';
 
@@ -53,22 +52,21 @@ router.post(
       const { email, password } = req.body;
 
       // Check if user already exists
-      const existingUser = User.findByEmail(email);
+      const existingUser = await User.findByEmail(email);
       if (existingUser) {
+        console.log(`Registration failed: Email ${email} already exists`);
         return res.status(409).json({
           success: false,
           message: 'User with this email already exists'
         });
       }
 
-      // Hash password
-      const password_hash = await hashPassword(password);
-
-      // Create user (using synchronous version since we're using better-sqlite3)
+      // Create user (password will be hashed internally by User.create)
       let newUser;
       try {
-        newUser = User.create(email, password_hash);
+        newUser = await User.create(email, password);
       } catch (error) {
+        console.error('User creation error:', error);
         if (error.message === 'Email already exists') {
           return res.status(409).json({
             success: false,
@@ -142,25 +140,33 @@ router.post(
 
       const { email, password } = req.body;
 
+      console.log(`Login attempt for email: ${email}`);
+
       // Find user with password hash
-      const user = User.findByEmailWithPassword(email);
+      const user = await User.findByEmailWithPassword(email);
 
       if (!user) {
+        console.log(`Login failed: User not found for email ${email}`);
         return res.status(401).json({
           success: false,
           message: 'Invalid email or password'
         });
       }
 
-      // Compare passwords
-      const isPasswordValid = await comparePassword(password, user.password_hash);
+      console.log(`User found: ${user.email}, verifying password...`);
+
+      // Compare passwords using User.verifyPassword (synchronous bcrypt)
+      const isPasswordValid = User.verifyPassword(password, user.password_hash);
 
       if (!isPasswordValid) {
+        console.log(`Login failed: Invalid password for email ${email}`);
         return res.status(401).json({
           success: false,
           message: 'Invalid email or password'
         });
       }
+
+      console.log(`Login successful for email: ${email}`);
 
       // Generate JWT tokens
       const tokens = generateTokenPair({
@@ -230,9 +236,11 @@ router.post('/refresh', authenticateRefreshToken, async (req, res) => {
  */
 router.get('/me', authenticate, async (req, res) => {
   try {
-    const user = User.findById(req.userId);
+    console.log(`Fetching profile for user ID: ${req.userId}`);
+    const user = await User.findById(req.userId);
 
     if (!user) {
+      console.log(`Profile fetch failed: User ID ${req.userId} not found`);
       return res.status(404).json({
         success: false,
         message: 'User not found'
@@ -303,31 +311,34 @@ router.put(
 
       const { currentPassword, newPassword } = req.body;
 
+      console.log(`Password change attempt for user: ${req.user.email}`);
+
       // Get user with password hash
-      const user = User.findByEmailWithPassword(req.user.email);
+      const user = await User.findByEmailWithPassword(req.user.email);
 
       if (!user) {
+        console.log(`Password change failed: User ${req.user.email} not found`);
         return res.status(404).json({
           success: false,
           message: 'User not found'
         });
       }
 
-      // Verify current password
-      const isPasswordValid = await comparePassword(currentPassword, user.password_hash);
+      // Verify current password using User.verifyPassword (synchronous bcrypt)
+      const isPasswordValid = User.verifyPassword(currentPassword, user.password_hash);
 
       if (!isPasswordValid) {
+        console.log(`Password change failed: Invalid current password for ${req.user.email}`);
         return res.status(401).json({
           success: false,
           message: 'Current password is incorrect'
         });
       }
 
-      // Hash new password
-      const newPasswordHash = await hashPassword(newPassword);
+      // Update password (will be hashed internally by User.updatePassword)
+      await User.updatePassword(user.id, newPassword);
 
-      // Update password
-      User.updatePassword(user.id, newPasswordHash);
+      console.log(`Password changed successfully for user: ${req.user.email}`);
 
       return res.status(200).json({
         success: true,

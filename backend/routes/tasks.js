@@ -46,6 +46,8 @@ router.get(
       const userId = req.userId;
       const { status, priority } = req.query;
 
+      console.log(`Fetching tasks for user ${userId} with filters:`, { status, priority });
+
       // Build filters object
       const filters = {};
       if (status) filters.status = status;
@@ -53,11 +55,11 @@ router.get(
 
       // Get tasks with or without filters
       const tasks = Object.keys(filters).length > 0
-        ? Task.findByUserIdWithFilters(userId, filters)
-        : Task.findByUserId(userId);
+        ? await Task.findByUserIdWithFilters(userId, filters)
+        : await Task.findByUserId(userId);
 
       // Get task statistics
-      const stats = Task.getStatusCounts(userId);
+      const stats = await Task.getStatusCounts(userId);
 
       return res.status(200).json({
         success: true,
@@ -87,7 +89,8 @@ router.get(
 router.get('/overdue', async (req, res) => {
   try {
     const userId = req.userId;
-    const overdueTasks = Task.getOverdueTasks(userId);
+    console.log(`Fetching overdue tasks for user ${userId}`);
+    const overdueTasks = await Task.getOverdueTasks(userId);
 
     return res.status(200).json({
       success: true,
@@ -137,10 +140,13 @@ router.get(
       const taskId = parseInt(req.params.id);
       const userId = req.userId;
 
+      console.log(`Fetching task ${taskId} for user ${userId}`);
+
       // Get task
-      const task = Task.findById(taskId);
+      const task = await Task.findById(taskId);
 
       if (!task) {
+        console.log(`Task ${taskId} not found`);
         return res.status(404).json({
           success: false,
           message: 'Task not found'
@@ -149,6 +155,7 @@ router.get(
 
       // Verify task belongs to the user
       if (task.user_id !== userId) {
+        console.log(`User ${userId} does not own task ${taskId}`);
         return res.status(403).json({
           success: false,
           message: 'You do not have permission to access this task'
@@ -233,8 +240,10 @@ router.post(
       const userId = req.userId;
       const { title, description, status, priority, due_date } = req.body;
 
+      console.log(`Creating task for user ${userId}:`, { title, status, priority });
+
       // Create task
-      const newTask = Task.create({
+      const newTask = await Task.create({
         user_id: userId,
         title,
         description: description || null,
@@ -324,10 +333,13 @@ router.put(
       const taskId = parseInt(req.params.id);
       const userId = req.userId;
 
+      console.log(`Updating task ${taskId} for user ${userId}`);
+
       // Check if task exists
-      const existingTask = Task.findById(taskId);
+      const existingTask = await Task.findById(taskId);
 
       if (!existingTask) {
+        console.log(`Task ${taskId} not found for update`);
         return res.status(404).json({
           success: false,
           message: 'Task not found'
@@ -336,6 +348,7 @@ router.put(
 
       // Verify task belongs to the user
       if (existingTask.user_id !== userId) {
+        console.log(`User ${userId} does not own task ${taskId}`);
         return res.status(403).json({
           success: false,
           message: 'You do not have permission to update this task'
@@ -360,8 +373,10 @@ router.put(
         });
       }
 
+      console.log(`Applying updates to task ${taskId}:`, updates);
+
       // Update task
-      const updatedTask = Task.update(taskId, updates);
+      const updatedTask = await Task.update(taskId, updates);
 
       return res.status(200).json({
         success: true,
@@ -415,10 +430,13 @@ router.patch(
       const userId = req.userId;
       const { status } = req.body;
 
+      console.log(`Updating status for task ${taskId} to ${status}`);
+
       // Check if task exists
-      const existingTask = Task.findById(taskId);
+      const existingTask = await Task.findById(taskId);
 
       if (!existingTask) {
+        console.log(`Task ${taskId} not found for status update`);
         return res.status(404).json({
           success: false,
           message: 'Task not found'
@@ -427,6 +445,7 @@ router.patch(
 
       // Verify task belongs to the user
       if (existingTask.user_id !== userId) {
+        console.log(`User ${userId} does not own task ${taskId}`);
         return res.status(403).json({
           success: false,
           message: 'You do not have permission to update this task'
@@ -434,7 +453,7 @@ router.patch(
       }
 
       // Update status
-      const updatedTask = Task.updateStatus(taskId, status);
+      const updatedTask = await Task.updateStatus(taskId, status);
 
       return res.status(200).json({
         success: true,
@@ -482,10 +501,13 @@ router.delete(
       const taskId = parseInt(req.params.id);
       const userId = req.userId;
 
+      console.log(`Deleting task ${taskId} for user ${userId}`);
+
       // Check if task exists
-      const existingTask = Task.findById(taskId);
+      const existingTask = await Task.findById(taskId);
 
       if (!existingTask) {
+        console.log(`Task ${taskId} not found for deletion`);
         return res.status(404).json({
           success: false,
           message: 'Task not found'
@@ -494,6 +516,7 @@ router.delete(
 
       // Verify task belongs to the user
       if (existingTask.user_id !== userId) {
+        console.log(`User ${userId} does not own task ${taskId}`);
         return res.status(403).json({
           success: false,
           message: 'You do not have permission to delete this task'
@@ -501,7 +524,7 @@ router.delete(
       }
 
       // Delete task
-      const deleted = Task.delete(taskId);
+      const deleted = await Task.delete(taskId);
 
       if (!deleted) {
         return res.status(500).json({
@@ -534,9 +557,11 @@ router.get('/stats/summary', async (req, res) => {
   try {
     const userId = req.userId;
 
-    const statusCounts = Task.getStatusCounts(userId);
-    const allTasks = Task.findByUserId(userId);
-    const overdueTasks = Task.getOverdueTasks(userId);
+    console.log(`Fetching task statistics for user ${userId}`);
+
+    const statusCounts = await Task.getStatusCounts(userId);
+    const allTasks = await Task.findByUserId(userId);
+    const overdueTasks = await Task.getOverdueTasks(userId);
 
     return res.status(200).json({
       success: true,
