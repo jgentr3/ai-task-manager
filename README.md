@@ -1,137 +1,333 @@
-# AI Task Manager - A Claude-flow Showcase Project
+# Task Manager
 
-> **Project Goal**: Demonstrate how someone with minimal coding knowledge can build a full-stack application using Claude-flow and AI agent orchestration.
+A modern, full-stack task management application built with React and Node.js. Create, organize, and track your tasks with an intuitive interface and powerful features.
 
-## 🎯 What This Project Demonstrates
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![Node](https://img.shields.io/badge/node-%3E%3D14.0.0-brightgreen.svg)
+![React](https://img.shields.io/badge/react-18.2.0-blue.svg)
 
-This is a **learning journey documentation** showing how Claude-flow enables non-technical users to:
-- Build a modern web application
-- Coordinate multiple AI agents
-- Follow best practices automatically
-- Create production-ready code
+## 📋 Table of Contents
 
-## 📱 What We're Building
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Screenshots](#screenshots)
+- [Getting Started](#getting-started)
+- [Installation](#installation)
+- [Running the Application](#running-the-application)
+- [API Endpoints](#api-endpoints)
+- [Project Structure](#project-structure)
+- [Testing](#testing)
+- [Environment Variables](#environment-variables)
+- [Contributing](#contributing)
+- [License](#license)
 
-A modern Task Management application with:
-- Beautiful, responsive UI
-- User authentication
-- Real-time updates
-- Task categorization and prioritization
-- Due date tracking
-- Search and filtering
+## ✨ Features
 
-## 🛠️ Tech Stack (Chosen by AI Agents)
+### User Management
+- 🔐 **Secure Authentication** - JWT-based authentication with access and refresh tokens
+- 👤 **User Registration** - Create account with email and password
+- 🔑 **Password Validation** - Strong password requirements with real-time strength indicator
+- 🔄 **Auto-login** - Persistent sessions across page refreshes
+- 🚪 **Logout** - Secure session termination
 
-- **Frontend**: React with Tailwind CSS
-- **Backend**: Node.js/Express
-- **Database**: SQLite (easy to set up)
-- **Authentication**: JWT tokens
+### Task Management
+- ➕ **Create Tasks** - Add tasks with title, description, priority, status, and due date
+- ✏️ **Edit Tasks** - Update any task field with a clean modal interface
+- 🗑️ **Delete Tasks** - Remove tasks with confirmation dialog
+- 📊 **Task Statistics** - Real-time dashboard showing task counts by status
+- 🏷️ **Priority Levels** - Low, Medium, and High priority with color indicators
+- 📅 **Due Dates** - Set and track task deadlines
+- ⚠️ **Overdue Alerts** - Visual warnings for past-due tasks
 
-## 🚀 The Claude-flow Journey
+### Organization
+- 🔍 **Search** - Find tasks by title or description
+- 🎯 **Filter by Status** - View pending, in-progress, or completed tasks
+- 🎨 **Filter by Priority** - Focus on high, medium, or low priority tasks
+- 🔄 **Quick Status Updates** - Change task status with one click
+- 📈 **Multiple Filters** - Combine search and filters for precise results
 
-This project documents the entire process of building an app using natural language commands:
+### User Interface
+- 🎨 **Modern Design** - Clean, professional interface with Tailwind CSS
+- 📱 **Responsive Layout** - Works seamlessly on desktop, tablet, and mobile
+- 🌈 **Color-coded Cards** - Visual priority indicators (red, yellow, green)
+- ⚡ **Smooth Animations** - Polished transitions and hover effects
+- 🎯 **Empty States** - Helpful messages when no tasks exist
+- 🔄 **Loading States** - Skeleton loaders and spinners for better UX
 
-### Phase 1: Project Setup
-```bash
-npx claude-flow@alpha init --force
-npx claude-flow@alpha swarm "create project structure for a task management app"
+## 🛠️ Tech Stack
+
+### Frontend
+- **React 18** - Modern UI library with hooks
+- **Vite** - Next-generation frontend tooling
+- **React Router v6** - Client-side routing
+- **Tailwind CSS** - Utility-first CSS framework
+- **Axios** - HTTP client for API calls
+- **Context API** - State management
+
+### Backend
+- **Node.js** - JavaScript runtime
+- **Express** - Web application framework
+- **SQLite** (better-sqlite3) - Embedded database
+- **JWT** (jsonwebtoken) - Authentication tokens
+- **bcryptjs** - Password hashing
+- **Express Validator** - Request validation
+- **CORS** - Cross-origin resource sharing
+- **dotenv** - Environment variable management
+
+## 📸 Screenshots
+
+<!-- Add screenshots here when available -->
+
+### Login Page
+```
+[Screenshot placeholder - Login page with gradient background]
 ```
 
-### Phase 2: Backend Development
-```bash
-npx claude-flow@alpha swarm "build REST API with authentication and CRUD operations for tasks"
+### Dashboard
+```
+[Screenshot placeholder - Dashboard with task cards and statistics]
 ```
 
-### Phase 3: Frontend Development
-```bash
-npx claude-flow@alpha swarm "create modern React UI with Tailwind for task management"
+### Task Creation
+```
+[Screenshot placeholder - Modal form for creating tasks]
 ```
 
-### Phase 4: Integration & Testing
+## 🚀 Getting Started
+
+### Prerequisites
+
+- **Node.js** (v14 or higher) - [Download](https://nodejs.org/)
+- **npm** (comes with Node.js) or **yarn**
+- **Git** - [Download](https://git-scm.com/)
+
+### Quick Start (3 Steps)
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/yourusername/ai-task-manager.git
+   cd ai-task-manager
+   ```
+
+2. **Install dependencies**
+   ```bash
+   # Install backend dependencies
+   cd backend
+   npm install
+
+   # Install frontend dependencies
+   cd ../frontend
+   npm install
+   ```
+
+3. **Start the application**
+   ```bash
+   # Terminal 1: Start backend (from backend folder)
+   npm run dev
+
+   # Terminal 2: Start frontend (from frontend folder)
+   npm run dev
+   ```
+
+4. **Open your browser**
+   - Navigate to: http://localhost:5173
+   - Backend API: http://localhost:5000/api
+
+## 💻 Installation
+
+### Backend Setup
+
 ```bash
-npx claude-flow@alpha swarm "integrate frontend and backend, add error handling and tests"
+cd backend
+
+# Install dependencies
+npm install
+
+# Create .env file
+cp .env.example .env
+
+# Edit .env with your configuration
+# The server will start on port 5000 by default
+
+# Start development server
+npm run dev
 ```
 
-## 📚 Documentation Structure
+**Expected Output:**
+```
+===========================================
+🚀 Task Manager API Server
+===========================================
+📡 Server running on port: 5000
+🌍 Environment: development
+🔗 API URL: http://localhost:5000/api
+💾 Database: SQLite (Initialized)
+===========================================
+```
 
-- `/docs/setup-guide.md` - Step-by-step setup instructions
-- `/docs/commands-used.md` - Every Claude-flow command with explanations
-- `/docs/lessons-learned.md` - Tips and insights from the journey
-- `/docs/troubleshooting.md` - Common issues and solutions
-- `/journey/` - Screenshots and progress logs
+### Frontend Setup
 
-## 🎓 Learning Outcomes
+```bash
+cd frontend
 
-By the end of this project, you'll understand:
-- How to communicate effectively with AI agents
-- The SPARC methodology (Specification, Pseudocode, Architecture, Refinement, Completion)
-- How to review and iterate on AI-generated code
-- Best practices for AI-assisted development
+# Install dependencies
+npm install
 
-## 🔑 Prerequisites
+# Start development server
+npm run dev
+```
 
-1. **Claude Pro Subscription** - For Claude Code authentication
-2. **GitHub Account** - For version control
-3. **Node.js** - Version 18 or higher
-4. **Basic Terminal Skills** - Running commands and navigating directories
+**Expected Output:**
+```
+  VITE v5.0.8  ready in 523 ms
 
-## 🏁 Quick Start
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: use --host to expose
+```
 
-### Option 1: GitHub Codespaces (Recommended for Beginners)
-1. Fork this repository
-2. Click "Code" → "Create codespace on main"
-3. Wait for environment to set up
-4. Follow `/docs/setup-guide.md`
+## 🎮 Running the Application
 
-### Option 2: Local Development
-1. Clone this repository
-2. Install Node.js if not already installed
-3. Follow `/docs/setup-guide.md`
+### Development Mode
 
-## 📖 Project Structure
+**Backend:**
+```bash
+cd backend
+npm run dev  # Auto-restarts on file changes
+```
+
+**Frontend:**
+```bash
+cd frontend
+npm run dev  # Hot module replacement enabled
+```
+
+### Production Mode
+
+**Backend:**
+```bash
+cd backend
+npm start
+```
+
+**Frontend:**
+```bash
+cd frontend
+npm run build    # Build for production
+npm run preview  # Preview production build
+```
+
+## 📡 API Endpoints
+
+### Authentication
+
+| Method | Endpoint | Description | Auth Required |
+|--------|----------|-------------|---------------|
+| POST | `/api/auth/register` | Register new user | No |
+| POST | `/api/auth/login` | Login user | No |
+| POST | `/api/auth/refresh` | Refresh access token | Yes (Refresh Token) |
+| GET | `/api/auth/me` | Get current user | Yes |
+| PUT | `/api/auth/change-password` | Change password | Yes |
+
+### Tasks
+
+| Method | Endpoint | Description | Auth Required |
+|--------|----------|-------------|---------------|
+| GET | `/api/tasks` | Get all user tasks | Yes |
+| GET | `/api/tasks/:id` | Get task by ID | Yes |
+| POST | `/api/tasks` | Create new task | Yes |
+| PUT | `/api/tasks/:id` | Update task | Yes |
+| PATCH | `/api/tasks/:id/status` | Update task status | Yes |
+| DELETE | `/api/tasks/:id` | Delete task | Yes |
+| GET | `/api/tasks/overdue` | Get overdue tasks | Yes |
+| GET | `/api/tasks/stats/summary` | Get task statistics | Yes |
+
+### Query Parameters
+
+**GET /api/tasks**
+- `status` - Filter by status (pending, in-progress, completed)
+- `priority` - Filter by priority (low, medium, high)
+
+For complete API documentation, see [backend/README.md](backend/README.md)
+
+## 📁 Project Structure
 
 ```
 ai-task-manager/
-├── README.md                 # This file
-├── docs/
-│   ├── setup-guide.md       # Detailed setup instructions
-│   ├── commands-used.md     # All Claude-flow commands
-│   ├── lessons-learned.md   # Tips and insights
-│   └── troubleshooting.md   # Common issues
-├── journey/
-│   ├── day-01.md           # Progress logs
-│   ├── screenshots/        # Visual documentation
-│   └── iterations/         # Code evolution
-├── .devcontainer/          # GitHub Codespaces config
-├── backend/                # API and database (AI-generated)
-├── frontend/               # React app (AI-generated)
-└── tests/                  # Test suite (AI-generated)
+├── backend/                    # Express API Server
+│   ├── config/                # Configuration files
+│   ├── middleware/            # Express middleware
+│   ├── models/                # Database models
+│   ├── routes/                # API routes
+│   ├── utils/                 # Utility functions
+│   ├── server.js              # Entry point
+│   └── package.json
+│
+├── frontend/                   # React Application
+│   ├── src/
+│   │   ├── components/        # React components
+│   │   ├── context/           # Context providers
+│   │   ├── pages/             # Page components
+│   │   ├── services/          # API services
+│   │   └── App.jsx            # Main app
+│   └── package.json
+│
+└── README.md                   # This file
 ```
 
-## 🤝 Contributing to This Showcase
+## 🧪 Testing
 
-This project is designed to help others learn. You can contribute by:
-- Adding your own journey logs
-- Documenting different approaches
-- Sharing screenshots and insights
-- Improving documentation
+### Backend Tests
+
+```bash
+cd backend
+node test-api.js
+```
+
+### Frontend Tests
+
+See `frontend/TESTING.md` for comprehensive testing guide.
+
+## 🔐 Environment Variables
+
+### Backend (.env)
+
+```env
+PORT=5000
+NODE_ENV=development
+FRONTEND_URL=http://localhost:5173
+JWT_SECRET=your-secret-key
+JWT_EXPIRES_IN=7d
+JWT_REFRESH_EXPIRES_IN=30d
+```
+
+### Frontend (.env)
+
+```env
+VITE_API_URL=/api
+```
+
+## 📚 Additional Documentation
+
+- **Backend API**: [backend/README.md](backend/README.md)
+- **Frontend Components**: [frontend/README.md](frontend/README.md)
+- **API Testing**: [backend/TESTING.md](backend/TESTING.md)
+- **Frontend Testing**: [frontend/TESTING.md](frontend/TESTING.md)
+- **Quick Start**: [QUICKSTART.md](QUICKSTART.md)
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## 📝 License
 
-MIT - Feel free to use this as a template for your own learning projects
+This project is licensed under the MIT License.
 
 ## 🙏 Acknowledgments
 
-- **rUv (@ruvnet)** - Creator of Claude-flow
-- **Anthropic** - Claude AI and Claude Code
-- **The AI Code Chat Community** - Shared knowledge and support
-
-## 🔗 Useful Links
-
-- [Claude-flow GitHub](https://github.com/ruvnet/claude-flow)
-- [Claude Code Documentation](https://docs.claude.com/en/docs/claude-code)
-- [GitHub Codespaces Guide](https://docs.github.com/en/codespaces)
+- React team for the amazing library
+- Express.js community
+- Tailwind CSS team
 
 ---
 
-**Ready to start?** Head to `/docs/setup-guide.md` to begin your journey!
+**Built with ❤️ using React and Node.js**
