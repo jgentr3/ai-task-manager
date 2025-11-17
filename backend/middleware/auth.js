@@ -61,14 +61,17 @@ export const authenticate = async (req, res, next) => {
     }
 
     // Verify user still exists in database
-    const user = User.findById(decoded.id);
+    const user = await User.findById(decoded.id);
 
     if (!user) {
+      console.log(`Authentication failed: User ${decoded.id} not found in database`);
       return res.status(401).json({
         success: false,
         message: 'User no longer exists.'
       });
     }
+
+    console.log(`User authenticated: ${user.email} (ID: ${user.id})`);
 
     // Attach user information to request object
     req.user = {
@@ -110,7 +113,7 @@ export const optionalAuthenticate = async (req, res, next) => {
       const decoded = verifyToken(token);
 
       if (decoded.type === 'access') {
-        const user = User.findById(decoded.id);
+        const user = await User.findById(decoded.id);
 
         if (user) {
           req.user = {
@@ -171,14 +174,17 @@ export const authenticateRefreshToken = async (req, res, next) => {
     }
 
     // Verify user exists
-    const user = User.findById(decoded.id);
+    const user = await User.findById(decoded.id);
 
     if (!user) {
+      console.log(`Refresh token authentication failed: User ${decoded.id} not found`);
       return res.status(401).json({
         success: false,
         message: 'User no longer exists.'
       });
     }
+
+    console.log(`Refresh token authenticated for user: ${user.email}`);
 
     req.user = {
       id: user.id,
