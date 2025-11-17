@@ -12,20 +12,19 @@ class User {
    * @param {string} password - User's plain text password
    * @returns {Object} Created user object (without password)
    */
-  static create(email, password) {
+  static async create(email, password) {
     try {
       // Hash password
       const saltRounds = 10;
       const password_hash = bcrypt.hashSync(password, saltRounds);
 
       // Insert user into database
-      const stmt = db.prepare('INSERT INTO users (email, password_hash) VALUES (?, ?)');
-      const result = stmt.run(email, password_hash);
+      const result = await db.runAsync('INSERT INTO users (email, password_hash) VALUES (?, ?)', [email, password_hash]);
 
       // Return created user (without password)
-      return this.findById(result.lastInsertRowid);
+      return this.findById(result.lastID);
     } catch (error) {
-      if (error.code === 'SQLITE_CONSTRAINT_UNIQUE') {
+      if (error.code === 'SQLITE_CONSTRAINT' || error.message.includes('UNIQUE')) {
         throw new Error('Email already exists');
       }
       throw error;
@@ -37,9 +36,9 @@ class User {
    * @param {number} id - User ID
    * @returns {Object|null} User object (without password_hash)
    */
-  static findById(id) {
-    const stmt = db.prepare('SELECT id, email, created_at FROM users WHERE id = ?');
-    return stmt.get(id) || null;
+  static async findById(id) {
+    const user = await db.getAsync('SELECT id, email, created_at FROM users WHERE id = ?', [id]);
+    return user || null;
   }
 
   /**
@@ -47,9 +46,9 @@ class User {
    * @param {string} email - User's email address
    * @returns {Object|null} User object (without password_hash)
    */
-  static findByEmail(email) {
-    const stmt = db.prepare('SELECT id, email, created_at FROM users WHERE email = ?');
-    return stmt.get(email) || null;
+  static async findByEmail(email) {
+    const user = await db.getAsync('SELECT id, email, created_at FROM users WHERE email = ?', [email]);
+    return user || null;
   }
 
   /**
@@ -57,18 +56,17 @@ class User {
    * @param {string} email - User's email address
    * @returns {Object|null} User object (with password_hash)
    */
-  static findByEmailWithPassword(email) {
-    const stmt = db.prepare('SELECT * FROM users WHERE email = ?');
-    return stmt.get(email) || null;
+  static async findByEmailWithPassword(email) {
+    const user = await db.getAsync('SELECT * FROM users WHERE email = ?', [email]);
+    return user || null;
   }
 
   /**
    * Get all users
    * @returns {Array} Array of user objects (without password_hash)
    */
-  static findAll() {
-    const stmt = db.prepare('SELECT id, email, created_at FROM users');
-    return stmt.all();
+  static async findAll() {
+    return await db.allAsync('SELECT id, email, created_at FROM users', []);
   }
 
   /**
@@ -77,10 +75,9 @@ class User {
    * @param {string} email - New email address
    * @returns {Object|null} Updated user object
    */
-  static updateEmail(id, email) {
+  static async updateEmail(id, email) {
     try {
-      const stmt = db.prepare('UPDATE users SET email = ? WHERE id = ?');
-      const result = stmt.run(email, id);
+      const result = await db.runAsync('UPDATE users SET email = ? WHERE id = ?', [email, id]);
 
       if (result.changes === 0) {
         return null;
@@ -88,7 +85,7 @@ class User {
 
       return this.findById(id);
     } catch (error) {
-      if (error.code === 'SQLITE_CONSTRAINT_UNIQUE') {
+      if (error.code === 'SQLITE_CONSTRAINT' || error.message.includes('UNIQUE')) {
         throw new Error('Email already exists');
       }
       throw error;
@@ -101,12 +98,11 @@ class User {
    * @param {string} newPassword - New plain text password
    * @returns {boolean} Success status
    */
-  static updatePassword(id, newPassword) {
+  static async updatePassword(id, newPassword) {
     const saltRounds = 10;
     const password_hash = bcrypt.hashSync(newPassword, saltRounds);
 
-    const stmt = db.prepare('UPDATE users SET password_hash = ? WHERE id = ?');
-    const result = stmt.run(password_hash, id);
+    const result = await db.runAsync('UPDATE users SET password_hash = ? WHERE id = ?', [password_hash, id]);
 
     return result.changes > 0;
   }
@@ -126,9 +122,8 @@ class User {
    * @param {number} id - User ID
    * @returns {boolean} Success status
    */
-  static delete(id) {
-    const stmt = db.prepare('DELETE FROM users WHERE id = ?');
-    const result = stmt.run(id);
+  static async delete(id) {
+    const result = await db.runAsync('DELETE FROM users WHERE id = ?', [id]);
     return result.changes > 0;
   }
 }

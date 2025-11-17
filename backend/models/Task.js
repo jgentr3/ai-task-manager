@@ -16,15 +16,14 @@ class Task {
    * @param {string} taskData.due_date - Due date in YYYY-MM-DD format (optional)
    * @returns {Object} Created task object
    */
-  static create({ user_id, title, description = null, status = 'pending', priority = 'medium', due_date = null }) {
+  static async create({ user_id, title, description = null, status = 'pending', priority = 'medium', due_date = null }) {
     try {
-      const stmt = db.prepare(`
+      const result = await db.runAsync(`
         INSERT INTO tasks (user_id, title, description, status, priority, due_date)
         VALUES (?, ?, ?, ?, ?, ?)
-      `);
+      `, [user_id, title, description, status, priority, due_date]);
 
-      const result = stmt.run(user_id, title, description, status, priority, due_date);
-      return this.findById(result.lastInsertRowid);
+      return this.findById(result.lastID);
     } catch (error) {
       throw error;
     }
@@ -35,9 +34,9 @@ class Task {
    * @param {number} id - Task ID
    * @returns {Object|null} Task object
    */
-  static findById(id) {
-    const stmt = db.prepare('SELECT * FROM tasks WHERE id = ?');
-    return stmt.get(id) || null;
+  static async findById(id) {
+    const task = await db.getAsync('SELECT * FROM tasks WHERE id = ?', [id]);
+    return task || null;
   }
 
   /**
@@ -45,9 +44,8 @@ class Task {
    * @param {number} user_id - User ID
    * @returns {Array} Array of task objects
    */
-  static findByUserId(user_id) {
-    const stmt = db.prepare('SELECT * FROM tasks WHERE user_id = ? ORDER BY created_at DESC');
-    return stmt.all(user_id);
+  static async findByUserId(user_id) {
+    return await db.allAsync('SELECT * FROM tasks WHERE user_id = ? ORDER BY created_at DESC', [user_id]);
   }
 
   /**
@@ -58,7 +56,7 @@ class Task {
    * @param {string} filters.priority - Filter by priority
    * @returns {Array} Array of task objects
    */
-  static findByUserIdWithFilters(user_id, filters = {}) {
+  static async findByUserIdWithFilters(user_id, filters = {}) {
     let query = 'SELECT * FROM tasks WHERE user_id = ?';
     const params = [user_id];
 
@@ -74,17 +72,15 @@ class Task {
 
     query += ' ORDER BY created_at DESC';
 
-    const stmt = db.prepare(query);
-    return stmt.all(...params);
+    return await db.allAsync(query, params);
   }
 
   /**
    * Get all tasks
    * @returns {Array} Array of all task objects
    */
-  static findAll() {
-    const stmt = db.prepare('SELECT * FROM tasks ORDER BY created_at DESC');
-    return stmt.all();
+  static async findAll() {
+    return await db.allAsync('SELECT * FROM tasks ORDER BY created_at DESC', []);
   }
 
   /**
@@ -93,7 +89,7 @@ class Task {
    * @param {Object} updates - Fields to update
    * @returns {Object|null} Updated task object
    */
-  static update(id, updates) {
+  static async update(id, updates) {
     const allowedFields = ['title', 'description', 'status', 'priority', 'due_date'];
     const fields = [];
     const values = [];
@@ -114,8 +110,7 @@ class Task {
     const query = `UPDATE tasks SET ${fields.join(', ')} WHERE id = ?`;
 
     try {
-      const stmt = db.prepare(query);
-      const result = stmt.run(...values);
+      const result = await db.runAsync(query, values);
 
       if (result.changes === 0) {
         return null;
@@ -133,9 +128,8 @@ class Task {
    * @param {string} status - New status ('pending', 'in-progress', 'completed')
    * @returns {Object|null} Updated task object
    */
-  static updateStatus(id, status) {
-    const stmt = db.prepare('UPDATE tasks SET status = ? WHERE id = ?');
-    const result = stmt.run(status, id);
+  static async updateStatus(id, status) {
+    const result = await db.runAsync('UPDATE tasks SET status = ? WHERE id = ?', [status, id]);
 
     if (result.changes === 0) {
       return null;
@@ -149,9 +143,8 @@ class Task {
    * @param {number} id - Task ID
    * @returns {boolean} Success status
    */
-  static delete(id) {
-    const stmt = db.prepare('DELETE FROM tasks WHERE id = ?');
-    const result = stmt.run(id);
+  static async delete(id) {
+    const result = await db.runAsync('DELETE FROM tasks WHERE id = ?', [id]);
     return result.changes > 0;
   }
 
@@ -160,9 +153,8 @@ class Task {
    * @param {number} user_id - User ID
    * @returns {number} Number of deleted tasks
    */
-  static deleteByUserId(user_id) {
-    const stmt = db.prepare('DELETE FROM tasks WHERE user_id = ?');
-    const result = stmt.run(user_id);
+  static async deleteByUserId(user_id) {
+    const result = await db.runAsync('DELETE FROM tasks WHERE user_id = ?', [user_id]);
     return result.changes;
   }
 
@@ -171,15 +163,14 @@ class Task {
    * @param {number} user_id - User ID
    * @returns {Object} Object with counts for each status
    */
-  static getStatusCounts(user_id) {
-    const stmt = db.prepare(`
+  static async getStatusCounts(user_id) {
+    const results = await db.allAsync(`
       SELECT status, COUNT(*) as count
       FROM tasks
       WHERE user_id = ?
       GROUP BY status
-    `);
+    `, [user_id]);
 
-    const results = stmt.all(user_id);
     const counts = {
       pending: 0,
       'in-progress': 0,
@@ -198,16 +189,14 @@ class Task {
    * @param {number} user_id - User ID
    * @returns {Array} Array of overdue task objects
    */
-  static getOverdueTasks(user_id) {
-    const stmt = db.prepare(`
+  static async getOverdueTasks(user_id) {
+    return await db.allAsync(`
       SELECT * FROM tasks
       WHERE user_id = ?
       AND due_date < date('now')
       AND status != 'completed'
       ORDER BY due_date ASC
-    `);
-
-    return stmt.all(user_id);
+    `, [user_id]);
   }
 }
 

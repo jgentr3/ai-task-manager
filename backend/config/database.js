@@ -1,24 +1,31 @@
-import Database from 'better-sqlite3';
+import sqlite3 from 'sqlite3';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { promisify } from 'util';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Create database instance
 const dbPath = path.join(__dirname, '..', 'database.sqlite');
-const db = new Database(dbPath, { verbose: console.log });
+const db = new sqlite3.Database(dbPath);
 
-// Enable foreign keys
-db.pragma('foreign_keys = ON');
+// Promisify database methods for easier async/await usage
+db.runAsync = promisify(db.run);
+db.getAsync = promisify(db.get);
+db.allAsync = promisify(db.all);
+db.execAsync = promisify(db.exec);
 
 /**
  * Initialize database tables
  */
-const initializeDatabase = () => {
+const initializeDatabase = async () => {
   try {
+    // Enable foreign keys
+    await db.runAsync('PRAGMA foreign_keys = ON');
+
     // Create users table
-    db.exec(`
+    await db.execAsync(`
       CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         email TEXT UNIQUE NOT NULL,
@@ -28,7 +35,7 @@ const initializeDatabase = () => {
     `);
 
     // Create tasks table
-    db.exec(`
+    await db.execAsync(`
       CREATE TABLE IF NOT EXISTS tasks (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER NOT NULL,
@@ -44,7 +51,7 @@ const initializeDatabase = () => {
     `);
 
     // Create trigger to update updated_at timestamp
-    db.exec(`
+    await db.execAsync(`
       CREATE TRIGGER IF NOT EXISTS update_task_timestamp
       AFTER UPDATE ON tasks
       BEGIN
@@ -53,7 +60,7 @@ const initializeDatabase = () => {
     `);
 
     // Create indexes for better query performance
-    db.exec(`
+    await db.execAsync(`
       CREATE INDEX IF NOT EXISTS idx_tasks_user_id ON tasks(user_id);
       CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks(status);
       CREATE INDEX IF NOT EXISTS idx_tasks_priority ON tasks(priority);
